@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
 
-// testing commit
 void main() {
   runApp(const MyApp());
 }

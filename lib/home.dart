@@ -26,6 +26,73 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        body: FutureBuilder<List<League>>(
+            future: _fetchLeagues(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return MiMainPage(leagueData: snapshot.data!);
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('${snapshot.error}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium!
+                          .copyWith(color: Colors.red)),
+                );
+              } else {
+                return const MiSplashScreen();
+              }
+            }),
+      );
+}
+
+class MiSplashScreen extends StatelessWidget {
+  const MiSplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Align(
+          alignment: FractionalOffset.center,
+          child: Icon(Icons.sports_soccer,
+              size: 300, color: Color.fromARGB(255, 14, 65, 75)),
+        ),
+        Align(
+          alignment: AlignmentDirectional.center,
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(
+              'We are loading! Please Wait...',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium!
+                  .copyWith(color: const Color.fromARGB(255, 244, 203, 54)),
+            ),
+            const SizedBox(
+              height: 50,
+            ),
+            const SizedBox(
+              height: 100,
+              width: 100,
+              child: CircularProgressIndicator(
+                strokeWidth: 12,
+                strokeCap: StrokeCap.round,
+              ),
+            )
+          ]),
+        )
+      ],
+    );
+  }
+}
+
+class MiMainPage extends StatelessWidget {
+  const MiMainPage({super.key, required this.leagueData});
+
+  final List<League> leagueData;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: const Row(
             children: [
@@ -37,10 +104,30 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.scoreboard), label: ''),
-        ]),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.scoreboard), label: ''),
+          ],
+          onTap: (value) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(),
+                  body: AlertDialog(
+                      content: Text(
+                        "That feature is not yet implemented!",
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium!
+                            .copyWith(color: Colors.amber),
+                      ),
+                      backgroundColor: const Color.fromARGB(255, 60, 5, 131)),
+                ),
+              ),
+            );
+          },
+        ),
         drawer: Drawer(
             child: Column(
           children: [
@@ -80,23 +167,9 @@ class HomePage extends StatelessWidget {
               )
           ],
         )),
-        body: FutureBuilder<List<League>>(
-            future: _fetchLeagues(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return LeagueView(leaguesData: snapshot.data!);
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('${snapshot.error}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelMedium!
-                          .copyWith(color: Colors.red)),
-                );
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            }),
+        body: LeagueView(
+          leaguesData: leagueData,
+        ),
       );
 }
 
@@ -105,23 +178,23 @@ class LeagueView extends StatelessWidget {
   final List<League> leaguesData;
 
   @override
-  Widget build(BuildContext context) => Container(
-          child: GridView.count(
+  Widget build(BuildContext context) => GridView.count(
         crossAxisCount: 3,
         children: [
           for (int i = 0; i < leaguesData.length; i++)
             Padding(
               padding:
-                  const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20.0),
+                  const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
               child: GridTile(
                   footer: Padding(
-                    padding: const EdgeInsets.only(left: 80.0, bottom: 10.0),
+                    padding: const EdgeInsets.only(left: 40.0, bottom: 10.0),
                     child: Text(leaguesData[i].name!,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelMedium!
-                            .copyWith(
-                                color: Color.fromARGB(255, 255, 246, 190))),
+                        softWrap: true,
+                        style:
+                            Theme.of(context).textTheme.labelMedium!.copyWith(
+                                  color: Color.fromARGB(255, 255, 246, 190),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
                   ),
                   child: GestureDetector(
                       child: LeagueCard(league: leaguesData[i]),
@@ -134,5 +207,5 @@ class LeagueView extends StatelessWidget {
                       })),
             )
         ],
-      ));
+      );
 }
